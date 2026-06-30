@@ -14,7 +14,22 @@ from .output import write_output
 from .scenarios import describe_scenario, list_scenarios, plan_scenario
 
 
+def _force_utf8_io() -> None:
+    # On Windows the console / a redirected pipe defaults to the locale encoding
+    # (cp936/cp1252), which garbles the CLI's Chinese output (dataset descriptions,
+    # help text, JSON). Force UTF-8 so output is consistent on every platform and
+    # whether or not it is piped (e.g. captured by an automation tool).
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8")
+            except (ValueError, OSError):
+                pass
+
+
 def main(argv: list[str] | None = None) -> None:
+    _force_utf8_io()
     parser = build_parser()
     args = parser.parse_args(argv)
     if not hasattr(args, "handler"):

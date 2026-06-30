@@ -306,6 +306,21 @@ def test_build_unknown_business_dataset_reported_before_init(monkeypatch, capsys
     assert "Unknown business dataset" in capsys.readouterr().err
 
 
+def test_force_utf8_io_corrects_non_utf8_stdout(monkeypatch):
+    import io
+
+    import rqsdk_quant.cli as climod
+
+    buf = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(buf, encoding="gbk"))  # emulate Windows redirect
+    climod._force_utf8_io()
+
+    assert sys.stdout.encoding == "utf-8"
+    sys.stdout.write("当前分钟行情")
+    sys.stdout.flush()
+    assert buf.getvalue() == "当前分钟行情".encode("utf-8")
+
+
 def test_top_level_help_has_quickstart_examples(capsys):
     out = _help_text(capsys, ["--help"])
     assert "Quick start" in out
