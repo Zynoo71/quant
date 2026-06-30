@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rqsdk-quant"
+version = "0.1.0"
+description = "CLI and research tooling for Ricequant RQSDK based quant data workflows."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = []
+
+[project.optional-dependencies]
+data = [
+  "rqdatac>=3.5.3.1",
+  "rqdatac-fund>=1.0.43,<1.1",
+  "pandas>=2.0",
+]
+rqsdk = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+rqq = "rqsdk_quant.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rqsdk_quant"]
