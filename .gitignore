@@ -217,7 +217,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Project generated artifacts (reproducible via scripts/live_data_check.py and `rqq data generate/build`)
+# Project generated artifacts, incl. real RQData sample output from
+# scripts/live_data_check.py — reproducible locally, not redistributed.
 outputs/
-# Real RQData sample output — reproducible locally, not redistributed
-docs/data-live-sample-results.md

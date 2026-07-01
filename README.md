@@ -1,11 +1,11 @@
 # rqsdk_quant
 
-> 面向米筐 RQSDK/RQData 的量化数据 CLI —— 一个稳定的 `rqq` 命令入口，让人和外部 LLM/自动化系统都能稳定地取数、聚合、生成业务表。当前覆盖数据层；因子、回测、交易为后续。
+> 面向米筐 RQData 的量化数据 CLI —— 一个稳定的 `rqq` 命令入口，让人和外部 LLM/自动化系统都能稳定取数。**每个命令对应一次原子 RQData 调用**，按官方模块组织；不做数据聚合。因子、回测、交易为后续。
 
 ## 特性
 
-- **统一入口 `rqq`** —— ~60 个数据集 + 7 个研究场景 + 7 张业务拼装宽表，全是声明式注册，加新接口只加一条数据、不写函数。
-- **LLM 友好** —— 默认 markdown 输出；`rqq help` 一次性吐出全部命令、参数、必填项和默认值；报错清晰、退出码一致，便于自我纠正。
+- **统一入口 `rqq`** —— ~200 个原子数据集，镜像整个 RQData API，按官方模块组织；目录由 rqdatac 签名自动生成，加新接口只加一行、不写函数。
+- **LLM 友好** —— 默认 markdown 输出；`rqq help` 一次性吐出全部命令、数据集、参数和必填项；报错清晰、退出码一致，便于自我纠正。
 - **原生 license** —— `rqq license` 贴 key 即用，存 `~/.rqq`，不碰环境变量、即时生效、三系统一致。
 - **干净安装** —— 纯 wheel，一行装；零依赖核心 + 可选 `data` extra。
 
@@ -53,49 +53,42 @@ rqq license info                     # 查看（已打码）/ rqq license clear 
 ## 快速开始
 
 ```bash
-rqq help                             # 一次拿到所有命令 / 数据集 / 参数 / 必填 / 默认值
+rqq help                             # 一次拿到所有命令 / 数据集 / 参数 / 必填 / 示例
 rqq data list                        # 列数据集（--category 过滤）
-rqq data describe price              # 看某数据集的参数
+rqq data describe price              # 看某数据集的参数说明 + 可运行示例
+rqq data list --category fund-mod    # 看某个模块下的数据集
 rqq data get price --ids 000001.XSHE --start 2024-01-02 --end 2024-01-03
-rqq data build research-monitor-snapshot --ids 000001.XSHE --start 2024-01-01 --end 2024-01-31
 ```
 
 默认输出 **markdown**（人和 LLM 都好读）；需要机器解析或落盘时用 `--format json` / `--format csv`，`-o FILE` 写文件。
 
-**完整命令手册见 [docs/cli-usage.md](docs/cli-usage.md)。**
+**完整数据集与参数参考：`rqq help`**（离线、由 rqdatac 签名自动生成，始终最新）。
 
 ## 覆盖
 
-**原子数据集**（`rqq data get <name>`，14 类）：
+~200 个原子数据集（`rqq data get <name>`），镜像整个 RQData API，按官方模块组织。`rqq data list --category <slug>` 列某模块，`rqq help` 一次拿全。
 
 ```text
-master    instruments / instrument / id-convert
-calendar  trading-dates / previous-trading-date / next-trading-date
-market    price / current-snapshot / current-minute / ticks
-factor    factor-names / factor
-financial financials-pit / current-performance / performance-forecast / forecast-report-date
-equity    shares / dividend / split / turnover-rate / st / suspended / holder-number / main-shareholder
-industry  instrument-industry / industry / industry-mapping
-event     announcement / investor-qa / investor-ra
-money-flow capital-flow / stock-connect / securities-margin / block-trade / abnormal-stocks(-detail)
-etf       etf-daily-units / etf-components / etf-cash-components
-fund      fund-instruments / fund-daily-units / fund-holdings / fund-stock-change / fund-asset/industry-allocation / fund-nav / fund-benchmark
-consensus consensus-price / consensus-comp-indicators / consensus-indicator / consensus-market-estimate / consensus-industry-rating / consensus-industries
-index     index-components / index-weights(-ex) / index-indicator / index-factor-exposure
-news      current-news
+generic-api       跨品种通用     price / current-snapshot / ticks / trading-dates / id-convert / instruments …
+stock-mod         A股           financials-pit / shares / dividend / capital-flow / stock-connect / securities-margin /
+                                announcement / investor-ra / industry / abnormal-stocks(-detail) …
+futures-mod       期货           futures-dominant / futures-basis / futures-member-rank / dominant-future …
+options-mod       期权           options-contracts / options-greeks / options-indicators …
+indices-mod       指数/场内基金   index-components / index-weights(-ex) / index-indicator / etf-* …
+fund-mod          基金           fund-nav / fund-holdings / fund-asset-allocation / fund-manager / fund-ratings …（40 个）
+convertible-mod   可转债         convertible-instruments / convertible-conversion-price / convertible-call-info …（19 个）
+risk-factors-mod  风险因子       factor / factor-names / factor-exposure / style-factor-exposure / stock-beta …
+spot-goods        现货           spot-benchmark-price
+repo              货币市场       interbank-offered-rate / econ-fixing-repo-rate …
+macro-economy     宏观经济       econ-money-supply / econ-reserve-ratio / exchange-rate …
+alternative-data  另类数据       consensus-price / consensus-indicator / current-news / concept …
 ```
 
-**研究场景**（`rqq data generate <name>`，把一个模块需要的多张原始表一次生成）：
-`base-universe` · `company-quality` · `institution-attention` · `capital-confirmation` · `price-trend` · `risk-crowding` · `daily-monitor`
-
-**业务拼装宽表**（`rqq data build <name>`，多源合并成稳定表）：
-`company-quality-snapshot` · `capital-confirmation-snapshot` · `research-monitor-snapshot` · `fund-position-snapshot` · `consensus-attention-snapshot` · `index-relative-strength-snapshot` · `event-news-snapshot`
-
-生成/拼装结果写入 `outputs/`，并附 `manifest.json` 记录参数、文件、跳过步骤和需外部补充的数据（`external_inputs`）。
+港股、米筐特色指数通过在现有数据集上传 `--market hk` / 特定指数代码获取，暂无独立条目。未封装的 rqdatac 函数可用 `rqq data call <fn> --kwargs '<json>'` 兜底。
 
 ## 给 LLM / 自动化用
 
-这个 CLI 就是为 LLM 调用设计的：默认 markdown 输出、`rqq help` 一次拿全 schema、报错可自纠。让模型**开局先跑 `rqq help`**，再 `describe` / `plan` 确认参数即可。
+这个 CLI 就是为 LLM 调用设计的：默认 markdown 输出、`rqq help` 一次拿全 schema、报错可自纠。让模型**开局先跑 `rqq help`**，再用 `rqq data describe <dataset>` 确认参数即可。
 
 仓库自带一个 Claude skill：`.claude/skills/rqq-data/`。
 
@@ -118,8 +111,7 @@ rm -rf quant ~/.rqq
 
 ## 文档
 
-- [docs/cli-usage.md](docs/cli-usage.md) —— 完整 CLI 手册
-- [docs/data-source-coverage.md](docs/data-source-coverage.md) —— 数据源与 API 覆盖检查
+- `rqq help` —— 全部数据集、参数、必填项（一次拿全，始终最新）
 - [AGENT.md](AGENT.md) —— 架构与贡献说明
 
 ## 免责声明
