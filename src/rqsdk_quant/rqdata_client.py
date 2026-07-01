@@ -124,56 +124,6 @@ def rq_quota() -> Any:
         return rqdatac.user.get_quota()
 
 
-def rq_instruments(instrument_type: str = "CS", market: str = "cn", date: str | None = None) -> Any:
-    rqdatac = init_rqdatac()
-    kwargs: dict[str, Any] = {"type": instrument_type, "market": market}
-    if date:
-        kwargs["date"] = date
-    with _suppress_known_warnings():
-        return rqdatac.all_instruments(**kwargs)
-
-
-def rq_id_convert(ids: list[str]) -> Any:
-    rqdatac = init_rqdatac()
-    with _suppress_known_warnings():
-        if len(ids) == 1:
-            return rqdatac.id_convert(ids[0])
-        return rqdatac.id_convert(ids)
-
-
-def rq_price(
-    ids: list[str],
-    start: str | None,
-    end: str | None,
-    frequency: str,
-    fields: list[str] | None,
-    adjust_type: str | None,
-    skip_suspended: bool,
-) -> Any:
-    rqdatac = init_rqdatac()
-    kwargs: dict[str, Any] = {
-        "order_book_ids": ids[0] if len(ids) == 1 else ids,
-        "frequency": frequency,
-        "skip_suspended": skip_suspended,
-    }
-    if start:
-        kwargs["start_date"] = start
-    if end:
-        kwargs["end_date"] = end
-    if fields:
-        kwargs["fields"] = fields
-    if adjust_type:
-        kwargs["adjust_type"] = adjust_type
-    with _suppress_known_warnings():
-        return rqdatac.get_price(**kwargs)
-
-
-def rq_trading_dates(start: str, end: str, market: str = "cn") -> Any:
-    rqdatac = init_rqdatac()
-    with _suppress_known_warnings():
-        return rqdatac.get_trading_dates(start, end, market=market)
-
-
 def rq_fetch_dataset(name: str, params: dict[str, Any]) -> Any:
     # Validate the request offline (unknown dataset / missing required params)
     # before touching the license, so a mistake gives a precise error instead of
@@ -183,52 +133,6 @@ def rq_fetch_dataset(name: str, params: dict[str, Any]) -> Any:
     rqdatac = init_rqdatac()
     with _suppress_known_warnings():
         return _resolve_attr(rqdatac, spec.function)(**kwargs)
-
-
-def rq_generate_scenario(
-    name: str,
-    params: dict[str, Any],
-    output_dir: str,
-    file_format: str,
-    strict: bool = False,
-) -> Any:
-    from .scenarios import generate_scenario, get_scenario
-
-    get_scenario(name)  # validate the scenario name offline before hitting the license
-    rqdatac = init_rqdatac()
-    with _suppress_known_warnings():
-        return generate_scenario(
-            name=name,
-            params=params,
-            output_dir=output_dir,
-            file_format=file_format,
-            resolver=lambda function_name: _resolve_attr(rqdatac, function_name),
-            strict=strict,
-        )
-
-
-def rq_build_business_dataset(
-    name: str,
-    params: dict[str, Any],
-    output_dir: str,
-    file_format: str,
-    strict: bool = False,
-    write_components: bool = False,
-) -> Any:
-    from .business import build_business_dataset, get_business_dataset
-
-    get_business_dataset(name)  # validate the business dataset name offline before hitting the license
-    rqdatac = init_rqdatac()
-    with _suppress_known_warnings():
-        return build_business_dataset(
-            name=name,
-            params=params,
-            output_dir=output_dir,
-            file_format=file_format,
-            resolver=lambda function_name: _resolve_attr(rqdatac, function_name),
-            strict=strict,
-            write_components=write_components,
-        )
 
 
 def rq_call(function_name: str, args_json: str | None, kwargs_json: str | None) -> Any:
