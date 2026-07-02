@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
+import unicodedata
 from typing import Any
 
 from . import __version__
@@ -75,10 +77,43 @@ _FETCH_EPILOG = (
 )
 
 
+def _display_width(text: str) -> int:
+    """Terminal column width, counting CJK/fullwidth chars as 2."""
+    return sum(2 if unicodedata.east_asian_width(c) in ("W", "F") else 1 for c in text)
+
+
+# One token = a single wide/CJK char (breakable) OR a run of narrow chars (kept intact).
+_WRAP_TOKENS = re.compile(r"[⺀-鿿　-〿＀-￯]|[^⺀-鿿　-〿＀-￯]+")
+
+
+class _HelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """Wrap option help by DISPLAY width so mixed Chinese/ASCII text neither
+    overflows the terminal (CJK is double-width) nor splits ASCII tokens like
+    `000001.XSHE` mid-way. Description/epilog stay raw (inherited)."""
+
+    def _split_lines(self, text: str, width: int) -> list[str]:
+        out: list[str] = []
+        for para in text.splitlines() or [""]:
+            line = ""
+            for tok in _WRAP_TOKENS.findall(para):
+                if line and _display_width(line) + _display_width(tok) > width:
+                    out.append(line.rstrip())
+                    line = tok.lstrip()
+                else:
+                    line += tok
+            out.append(line.rstrip())
+        return out or [""]
+
+
 class _HintingParser(argparse.ArgumentParser):
     """Appends a recovery hint when argparse rejects an unrecognized flag, so an
     LLM knows to check `describe` or use the --param escape hatch. Subparsers
-    inherit this class (argparse's parser_class defaults to type(self))."""
+    inherit this class (argparse's parser_class defaults to type(self)), and all
+    default to the CJK-aware help formatter."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs.setdefault("formatter_class", _HelpFormatter)
+        super().__init__(*args, **kwargs)
 
     def error(self, message: str):  # noqa: D401
         if "unrecognized arguments" in message:
@@ -94,7 +129,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="rqq",
         description="A CLI over Ricequant RQData: one command per atomic rqdatac data call.",
         epilog=_TOP_EPILOG,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_HelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command")
@@ -178,7 +213,7 @@ def _add_data_parser(subparsers: Any) -> None:
         help="Fetch data from RQData.",
         description="Fetch atomic datasets from RQData. Run `rqq help` for the full reference.",
         epilog=_DATA_EPILOG,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_HelpFormatter,
     )
     data_sub = data.add_subparsers(dest="data_command")
 
