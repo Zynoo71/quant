@@ -460,6 +460,21 @@ def test_fetch_subcommand_help_is_detailed_and_points_to_describe(capsys):
     assert "rqq data describe <dataset>" in out
 
 
+def test_every_parser_uses_cjk_help_formatter():
+    import argparse
+
+    from rqsdk_quant.cli import _HelpFormatter, build_parser
+
+    def walk(parser, path):
+        assert parser.formatter_class is _HelpFormatter, f"{path} lost the CJK-aware formatter"
+        for action in parser._actions:
+            if isinstance(action, argparse._SubParsersAction):
+                for name, sub in action.choices.items():
+                    walk(sub, f"{path} {name}")
+
+    walk(build_parser(), "rqq")
+
+
 def test_help_reference_markdown_lists_commands_and_modules(capsys):
     main(["help"])
     out = capsys.readouterr().out
