@@ -281,6 +281,19 @@ def test_info_init_failure_gives_license_reminder(monkeypatch, capsys):
     assert "rqq license" in capsys.readouterr().err
 
 
+def test_init_concurrency_limit_gives_targeted_message(monkeypatch, capsys):
+    def boom(*args, **kwargs):
+        raise RuntimeError("connection number exceeds")
+
+    monkeypatch.setitem(sys.modules, "rqdatac", types.SimpleNamespace(init=boom))
+    with pytest.raises(SystemExit) as exc:
+        main(["data", "info"])
+    assert exc.value.code == 2
+    err = capsys.readouterr().err
+    assert "并发连接数已达上限" in err
+    assert "no valid Ricequant license" not in err  # not misreported as a license problem
+
+
 def test_fetch_missing_required_reported_before_init(monkeypatch, capsys):
     monkeypatch.setitem(sys.modules, "rqdatac", _rqdatac_with_failing_init())
     with pytest.raises(SystemExit) as exc:

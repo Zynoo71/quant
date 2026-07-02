@@ -127,6 +127,9 @@ self-describing, so usually you just do what the message says:
     id/field/date format); fix it against `rqq data describe X`.
   - `unrecognized arguments: --foo` → that flag isn't a dedicated one; check
     `rqq data describe X` for real params, or pass it as `--param foo=bar`.
+  - `并发连接数已达上限 …` → too many simultaneous rqq/rqdatac processes on one
+    license (≈6 connections). The license is fine — do **not** reconfigure it;
+    wait a moment and retry, running commands serially instead of in parallel.
   - `no valid Ricequant license …` → license issue; hand back to the user (above).
 - **Exit code 1** = an unexpected error. Re-run with `RQQ_DEBUG=1` prefixed to get
   a full traceback (also works to see the traceback behind a `调用失败` message).

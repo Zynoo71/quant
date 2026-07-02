@@ -98,11 +98,16 @@ def init_rqdatac() -> Any:
             else:
                 rqdatac.init()
         except Exception as exc:
+            detail = f"{type(exc).__name__}: {exc}"
+            if "connection number exceeds" in str(exc):
+                raise CliError(
+                    "并发连接数已达上限（同一 license 约 6 个并发连接），license 本身没有问题。"
+                    f"等待其他 rqq/rqdatac 进程结束后重试，或减少同时发起的命令数。({detail})"
+                ) from exc
             raise CliError(
                 "rqdatac failed to initialize — no valid Ricequant license is configured. "
                 'Configure one with `rqq license -l "<license_key>"` (or `"<account>:<password>"`), '
-                "then retry. "
-                f"Underlying error: {type(exc).__name__}: {exc}"
+                f"then retry. Underlying error: {detail}"
             ) from exc
     return rqdatac
 
