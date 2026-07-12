@@ -212,11 +212,11 @@ DATASETS = {
         DatasetSpec("concept-list-range", "get_concept_list", "alternative-data", "区间概念板块列表", "start_date end_date market"),
         DatasetSpec("concept-names", "concept_names", "alternative-data", "证券所属概念板块名称", "!order_book_id date expect_type market"),
         DatasetSpec("consensus-comp-indicators", "get_consensus_comp_indicators", "alternative-data", "公司一致预期综合指标", "!order_book_ids start_date end_date fields report_range market"),
-        DatasetSpec("consensus-indicator", "get_consensus_indicator", "alternative-data", "一致预期财务指标", "!order_book_ids !fiscal_year fields start_date end_date date_rule market"),
+        DatasetSpec("consensus-indicator", "get_consensus_indicator", "alternative-data", "一致预期财务指标（每行含研报标题/分析师/机构/摘要）", "!order_book_ids !fiscal_year fields start_date end_date date_rule market"),
         DatasetSpec("consensus-industries", "all_consensus_industries", "alternative-data", "一致预期行业列表", "market"),
         DatasetSpec("consensus-industry-rating", "get_consensus_industry_rating", "alternative-data", "行业一致预期评级", "!industries !start_date !end_date market"),
         DatasetSpec("consensus-market-estimate", "get_consensus_market_estimate", "alternative-data", "市场一致预期", "!indexes !fiscal_year market"),
-        DatasetSpec("consensus-price", "get_consensus_price", "alternative-data", "一致预期目标价", "!order_book_ids start_date end_date fields adjust_type market"),
+        DatasetSpec("consensus-price", "get_consensus_price", "alternative-data", "一致预期目标价（按机构逐条）", "!order_book_ids start_date end_date fields adjust_type market"),
         DatasetSpec("current-news", "get_current_news", "alternative-data", "实时新闻流", "n start_time end_time channels"),
         DatasetSpec("stock-concept", "get_stock_concept", "alternative-data", "个股所属概念", "!order_book_ids market"),
     )

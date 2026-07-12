@@ -105,13 +105,18 @@ minute data unless the user explicitly asks and accepts the cost.
 - **Can**: fetch atomic data across all RQData modules — A股/港股 prices & ticks,
   financials, equity actions, fund flows (北上/两融/龙虎榜/大宗), factors & risk
   exposures, index components/weights, ETF & fund holdings/NAV, 可转债, 期货, 期权,
-  一致预期, 宏观/货币市场, 概念/新闻.
+  一致预期 (含研报标题/分析师/机构/摘要), 宏观/货币市场, 概念/新闻.
 - **Can't (yet)**: factor-strategy scoring, backtesting, live trading, and
   multi-source aggregation/composition (removed by design). If asked, say it's
   out of scope for this tool.
+- **Partly covered — analyst research**: there is **no full 研报全文/PDF library**,
+  but the 一致预期 datasets carry the useful parts. `consensus-indicator` returns, per
+  row, the report's 标题/分析师/机构 + a 摘要正文 (real analyst prose: 调研纪要, 盈利预测
+  逻辑, 风险提示); `consensus-price` gives per-institute 目标价; `consensus-comp-indicators`
+  the aggregated 一致预期 time series. Reach for these before telling the user "没有研报".
 - **Not in RQData**: patents, supply-chain / 产业链 maps, customer-certification,
-  orders/招标, and full research-report text. These need an external source —
-  don't fabricate them.
+  orders/招标, and full research-report **PDFs / 逐字全文**. These need an external
+  source — don't fabricate them.
 
 ## When something fails — recovery playbook
 

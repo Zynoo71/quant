@@ -152,9 +152,9 @@ CURATED: dict[str, tuple[str, str, str]] = {
     "etf.get_daily_units": ("indices-mod", "etf-daily-units", "ETF 每日份额"),
 
     # ---- 另类数据 (alternative-data) ----
-    "get_consensus_price": ("alternative-data", "consensus-price", "一致预期目标价"),
+    "get_consensus_price": ("alternative-data", "consensus-price", "一致预期目标价（按机构逐条）"),
     "get_consensus_comp_indicators": ("alternative-data", "consensus-comp-indicators", "公司一致预期综合指标"),
-    "get_consensus_indicator": ("alternative-data", "consensus-indicator", "一致预期财务指标"),
+    "get_consensus_indicator": ("alternative-data", "consensus-indicator", "一致预期财务指标（每行含研报标题/分析师/机构/摘要）"),
     "get_consensus_market_estimate": ("alternative-data", "consensus-market-estimate", "市场一致预期"),
     "get_consensus_industry_rating": ("alternative-data", "consensus-industry-rating", "行业一致预期评级"),
     "all_consensus_industries": ("alternative-data", "consensus-industries", "一致预期行业列表"),
